@@ -242,9 +242,20 @@ class ErrorHandler extends \lithium\core\StaticObjectDeprecated {
 		Filters::apply($class, $method, function($params, $next) use ($conditions, $handler) {
 			$wrap = static::$_exceptionHandler;
 
+			if (PHP_VERSION_ID < 70000) {
+				try {
+					return $next($params);
+				} catch (Exception $e) {
+					if (!static::matches($e, $conditions)) {
+						throw $e;
+					}
+					return $handler($wrap($e, true), $params);
+				}
+			}
+
 			try {
 				return $next($params);
-			} catch (Exception $e) {
+			} catch (\Throwable $e) {
 				if (!static::matches($e, $conditions)) {
 					throw $e;
 				}
