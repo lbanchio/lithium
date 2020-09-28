@@ -208,7 +208,13 @@ class Controller extends \lithium\core\ObjectDeprecated {
 			}
 			$this->_render['template'] = $this->_render['template'] ?: $action;
 
-			if ($result = call_user_func_array(array($this, $action), $args)) {
+			try {
+				$result = call_user_func_array(array($this, $action), $args);
+			} catch (ArgumentCountError $exception) {
+				throw new DispatchException("Attempted to invoke `{$action}` with wrong number of params.");
+			}
+
+			if ($result) {
 				if (is_string($result)) {
 					$this->render(['text' => $result]);
 					return $this->response;
